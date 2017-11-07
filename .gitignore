@@ -5,4 +5,4 @@
 ## Custom
 src/main.h.secret
 src/certs
-lib/AWS/IOT/src/aws_iot_certificates.c.secret
+lib/AWS_IOT/src/aws_iot_certificates.c.secret
