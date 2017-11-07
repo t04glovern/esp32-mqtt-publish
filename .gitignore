@@ -1,4 +1,4 @@
 .pioenvs
 .piolibdeps
 .vscode/c_cpp_properties.json
-src/main.h
+src/main.h.secret
