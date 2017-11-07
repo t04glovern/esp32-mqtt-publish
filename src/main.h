@@ -4,12 +4,9 @@
 const char *ssid = "YourWifiSSID";
 const char *password = "YourWifiPassword";
 
-// MQTT Details
-const char *mqtt_server = "YourMQTTServer";
-const char *mqtt_user = "MQTTUser";
-const char *mqtt_pass = "MQTTPass";
-const char *mqtt_in_topic = "MQTTTopicIn";
-const char *mqtt_out_topic = "MQTTTopicOut";
-const int mqtt_port = 1883;
+// AWS MQTT Details
+char *aws_mqtt_server = "YourAWSThingID.iot.ap-southeast-2.amazonaws.com";
+char *aws_mqtt_client_id = "YourMQTTClientID";
+char *aws_mqtt_thing_topic = "YourMQTTAWSIoTThing/YourMQTTTopic";
 
 #endif

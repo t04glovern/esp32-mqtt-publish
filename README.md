@@ -11,20 +11,19 @@ Edit the `src/main.h` file with the relevant information for your project and sa
 const char *ssid = "YourWifiSSID";
 const char *password = "YourWifiPassword";
 
-// MQTT Details
-const char *mqtt_server = "YourMQTTServer";
-const char *mqtt_user = "MQTTUser";
-const char *mqtt_pass = "MQTTPass";
-const char *mqtt_in_topic = "MQTTTopicIn";
-const char *mqtt_out_topic = "MQTTTopicOut";
-const int mqtt_port = 1883;
+// AWS MQTT Details
+char *aws_mqtt_server = "YourAWSThingID.iot.ap-southeast-2.amazonaws.com";
+char *aws_mqtt_client_id = "YourMQTTClientID";
+char *aws_mqtt_thing_topic = "YourMQTTAWSIoTThing/YourMQTTTopic";
 
 #endif
 ```
 
 ## MQTT Providers
 
-You can sign up for a free MQTT instance with [CloudMQTT](https://www.cloudmqtt.com/) and select the free `Cat` 
+### AWS IoT
+
+You can sign up for and follow along with the setup guides on [AWS IoT Setup](https://ap-southeast-2.console.aws.amazon.com/iotv2/home?region=ap-southeast-2#/connIntro)
 
 ## Platform IO
 
@@ -38,5 +37,12 @@ framework = arduino
 
 lib_deps =
     Adafruit MMA8451 Library@1.0.3
-    PubSubClient@2.6
 ```
+
+### lib dependencies
+
+#### AWS_IOT
+
+Based on the AWS_IOT Project in [ExploreEmbedded/Hornbill-Examples](https://github.com/ExploreEmbedded/Hornbill-Examples/tree/master/arduino-esp32/AWS_IOT), the AWS_IOT directory should be dropped into/maintained in the `lib` directory of this project
+
+You will need to make changes to `lib/AWS/IOT/src/aws_iot_certificates.c` based on the certificates you get when setting up a `thing` on the AWS platform.

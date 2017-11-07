@@ -1,44 +1,72 @@
 #include <Arduino.h>
 #include <Adafruit_MMA8451.h>
 #include <Adafruit_Sensor.h>
+#include <AWS_IOT.h>
 #include <WiFi.h>
-#include <PubSubClient.h>
 
+// Local Settings
 #include <main.h>
+
+// AWS_IOT Lib
+AWS_IOT aws_iot;
 
 // Accelerometer MMA8451
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
 
-WiFiClient espClient;
-PubSubClient client(espClient);
-
 // Global Values
-long lastMsg = 0;
-char msg[50];
-int value = 0;
+int status = WL_IDLE_STATUS;
+int tick = 0, msgCount = 0, msgReceived = 0;
+char payload[512];
+char rcvdPayload[512];
+
+void awsSubCallBackHandler(char *topicName, int payloadLen, char *payLoad)
+{
+    strncpy(rcvdPayload, payLoad, payloadLen);
+    rcvdPayload[payloadLen] = 0;
+    msgReceived = 1;
+}
 
 void setup_wifi()
 {
-    delay(10);
-    // We start by connecting to a WiFi network
-    Serial.println();
-    Serial.print("Connecting to ");
-    Serial.println(ssid);
-
-    WiFi.begin(ssid, password);
-
-    while (WiFi.status() != WL_CONNECTED)
+    while (status != WL_CONNECTED)
     {
-        delay(500);
-        Serial.print(".");
+        Serial.print("Attempting to connect to SSID: ");
+        Serial.println(ssid);
+
+        // Connect to WPA/WPA2 network.
+        status = WiFi.begin(ssid, password);
+
+        // wait 5 seconds for connection:
+        delay(5000);
     }
 
-    randomSeed(micros());
+    Serial.println("Connected to wifi");
+}
 
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
+void setup_aws_iot()
+{
+    if (aws_iot.connect(aws_mqtt_server, aws_mqtt_client_id) == 0)
+    {
+        Serial.println("Connected to AWS");
+        delay(1000);
+
+        if (0 == aws_iot.subscribe(aws_mqtt_thing_topic, awsSubCallBackHandler))
+        {
+            Serial.println("Subscribe Successfull");
+        }
+        else
+        {
+            Serial.println("Subscribe Failed, Check the Thing Name and Certificates");
+            while (1)
+                ;
+        }
+    }
+    else
+    {
+        Serial.println("AWS connection failed, Check the HOST Address");
+        while (1)
+            ;
+    }
 }
 
 void setup_accl()
@@ -58,74 +86,57 @@ void setup_accl()
     Serial.println("G");
 }
 
-void reconnect()
-{
-    // Loop until we're reconnected
-    while (!client.connected())
-    {
-        Serial.print("Attempting MQTT connection...");
-
-        // Attempt to connect
-        if (client.connect("ESP32", mqtt_user, mqtt_pass))
-        {
-            Serial.println("connected");
-            // Once connected, publish an announcement...
-            client.publish(mqtt_out_topic, "acc data connected");
-            // ... and resubscribe
-            client.subscribe(mqtt_in_topic);
-        }
-        else
-        {
-            Serial.print("failed, rc=");
-            Serial.print(client.state());
-            Serial.println(" try again in 5 seconds");
-            // Wait 5 seconds before retrying
-            delay(5000);
-        }
-    }
-}
-
-void setup(void)
+void setup()
 {
     Serial.begin(9600);
+    delay(10);
 
     setup_wifi();
+    setup_aws_iot();
     setup_accl();
 
-    client.setServer(mqtt_server, mqtt_port);
+    delay(2000);
 }
 
 void loop()
 {
-    // Check the MQTT Connection
-    if (!client.connected())
-    {
-        reconnect();
-    }
-    client.loop();
-
     // Read the 'raw' data in 14-bit counts
     mma.read();
 
-    /* Get a new sensor event */
+    // Get a new sensor event
     sensors_event_t event;
     mma.getEvent(&event);
 
-    long now = millis();
-    if (now - lastMsg > 2000)
+    if (msgReceived == 1)
     {
-        lastMsg = now;
-        ++value;
+        msgReceived = 0;
+        Serial.print("Received Message:");
+        Serial.println(rcvdPayload);
+    }
+    if (tick >= 2) // publish to topic every 2 seconds
+    {
+        tick = 0;
+
+        // Construct payload item
         snprintf(
-            msg, 
-            75, 
+            payload,
+            75,
             "%f,%f,%f", 
             event.acceleration.x,
             event.acceleration.y,
             event.acceleration.z
         );
-        Serial.print("Publish message: ");
-        Serial.println(msg);
-        client.publish(mqtt_out_topic, msg);
+
+        if (aws_iot.publish(aws_mqtt_thing_topic, payload) == 0)
+        {
+            Serial.print("Publish Message:");
+            Serial.println(payload);
+        }
+        else
+        {
+            Serial.println("Publish failed");
+        }
     }
+    vTaskDelay(1000 / portTICK_RATE_MS);
+    tick++;
 }
