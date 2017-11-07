@@ -1,4 +1,8 @@
 .pioenvs
 .piolibdeps
 .vscode/c_cpp_properties.json
+
+## Custom
 src/main.h.secret
+src/certs
+lib/AWS/IOT/src/aws_iot_certificates.c.secret
