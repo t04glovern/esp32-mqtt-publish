@@ -45,4 +45,4 @@ lib_deps =
 
 Based on the AWS_IOT Project in [ExploreEmbedded/Hornbill-Examples](https://github.com/ExploreEmbedded/Hornbill-Examples/tree/master/arduino-esp32/AWS_IOT), the AWS_IOT directory should be dropped into/maintained in the `lib` directory of this project
 
-You will need to make changes to `lib/AWS/IOT/src/aws_iot_certificates.c` based on the certificates you get when setting up a `thing` on the AWS platform.
+You will need to make changes to `lib/AWS/IOT/src/aws_iot_certficates.c` based on the certificates you get when setting up a `thing` on the AWS platform.
