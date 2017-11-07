@@ -1,4 +1,4 @@
-# esp32-mqtt-publish
+# esp32-mqtt-publish [![Build Status](https://travis-ci.org/t04glovern/esp32-mqtt-publish.svg?branch=master)](https://travis-ci.org/t04glovern/esp32-mqtt-publish)
 
 ## Setup
 
