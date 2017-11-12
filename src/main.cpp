@@ -15,9 +15,10 @@ Adafruit_MMA8451 mma = Adafruit_MMA8451();
 
 // Global Values
 int status = WL_IDLE_STATUS;
-int tick = 0, msgCount = 0, msgReceived = 0;
+int msgCount = 0, msgReceived = 0;
 char payload[512];
 char rcvdPayload[512];
+float accl_mag_thresh = 12.0f;
 
 void awsSubCallBackHandler(char *topicName, int payloadLen, char *payLoad)
 {
@@ -52,7 +53,7 @@ void setup_aws_iot()
 
         if (0 == aws_iot.subscribe(aws_mqtt_thing_topic, awsSubCallBackHandler))
         {
-            Serial.println("Subscribe Successfull");
+            Serial.println("Subscribe Successful");
         }
         else
         {
@@ -100,6 +101,9 @@ void setup()
 
 void loop()
 {
+    // 10hz delay
+    delay(100);
+
     // Read the 'raw' data in 14-bit counts
     mma.read();
 
@@ -107,26 +111,30 @@ void loop()
     sensors_event_t event;
     mma.getEvent(&event);
 
+    // Magnitude of values
+    float accl_mag = sqrt(
+        pow(event.acceleration.x, 2) +
+        pow(event.acceleration.y, 2) +
+        pow(event.acceleration.z, 2));
+
+    // Construct payload item
+    snprintf(
+        payload,
+        75,
+        "%f,%f,%f,%f",
+        event.acceleration.x,
+        event.acceleration.y,
+        event.acceleration.z,
+        accl_mag);
+
     if (msgReceived == 1)
     {
         msgReceived = 0;
         Serial.print("Received Message:");
         Serial.println(rcvdPayload);
     }
-    if (tick >= 2) // publish to topic every 2 seconds
+    if (accl_mag >= accl_mag_thresh)
     {
-        tick = 0;
-
-        // Construct payload item
-        snprintf(
-            payload,
-            75,
-            "%f,%f,%f", 
-            event.acceleration.x,
-            event.acceleration.y,
-            event.acceleration.z
-        );
-
         if (aws_iot.publish(aws_mqtt_thing_topic, payload) == 0)
         {
             Serial.print("Publish Message:");
@@ -137,6 +145,4 @@ void loop()
             Serial.println("Publish failed");
         }
     }
-    vTaskDelay(1000 / portTICK_RATE_MS);
-    tick++;
 }
