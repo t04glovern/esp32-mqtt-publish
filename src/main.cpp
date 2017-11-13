@@ -172,6 +172,7 @@ void loop()
         else
         {
             Serial.println("aws-pub [Failed]");
+            setup_wifi();
         }
     }
 }
