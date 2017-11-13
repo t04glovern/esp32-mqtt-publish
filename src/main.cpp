@@ -1,24 +1,46 @@
+/********************************************/
+/*                 Imports                  */
+/********************************************/
 #include <Arduino.h>
+
+// Accelerometer
 #include <Adafruit_MMA8451.h>
 #include <Adafruit_Sensor.h>
+
+// AWS IoT Support
 #include <AWS_IOT.h>
+
+// Wifi and NTP Support
 #include <WiFi.h>
+#include <NTPClient.h>
+
+// JSON Support
+#include <ArduinoJson.h>
 
 // Local Settings
 #include <main.h>
 
-// AWS_IOT Lib
-AWS_IOT aws_iot;
-
+/********************************************/
+/*                 Globals                  */
+/********************************************/
 // Accelerometer MMA8451
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
 
-// Global Values
+// Accelerometer threshold
+float accl_mag_thresh = 12.0f;
+
+// AWS_IOT Lib
+AWS_IOT aws_iot;
+
+// NTP Client
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "au.pool.ntp.org", 3600, 60000);
+
+// Misc Values
 int status = WL_IDLE_STATUS;
 int msgCount = 0, msgReceived = 0;
 char payload[512];
 char rcvdPayload[512];
-float accl_mag_thresh = 12.0f;
 
 void awsSubCallBackHandler(char *topicName, int payloadLen, char *payLoad)
 {
@@ -31,40 +53,43 @@ void setup_wifi()
 {
     while (status != WL_CONNECTED)
     {
-        Serial.print("Attempting to connect to SSID: ");
-        Serial.println(ssid);
-
         // Connect to WPA/WPA2 network.
         status = WiFi.begin(ssid, password);
 
-        // wait 5 seconds for connection:
-        delay(5000);
+        // wait 2 seconds for connection:
+        delay(2000);
     }
+}
 
-    Serial.println("Connected to wifi");
+void setup_ntp()
+{
+    timeClient.begin();
+    Serial.println("ntp [Connected]");
 }
 
 void setup_aws_iot()
 {
     if (aws_iot.connect(aws_mqtt_server, aws_mqtt_client_id) == 0)
     {
-        Serial.println("Connected to AWS");
+        // Wait 1 second for connection
         delay(1000);
 
-        if (0 == aws_iot.subscribe(aws_mqtt_thing_topic, awsSubCallBackHandler))
+        Serial.println("aws [Connected]");
+
+        if (0 == aws_iot.subscribe(aws_mqtt_thing_topic_sub, awsSubCallBackHandler))
         {
-            Serial.println("Subscribe Successful");
+            Serial.println("aws-sub [Connected]");
         }
         else
         {
-            Serial.println("Subscribe Failed, Check the Thing Name and Certificates");
+            Serial.println("aws-sub [Failed]");
             while (1)
                 ;
         }
     }
     else
     {
-        Serial.println("AWS connection failed, Check the HOST Address");
+        Serial.println("aws [Failed]");
         while (1)
             ;
     }
@@ -74,17 +99,12 @@ void setup_accl()
 {
     if (!mma.begin())
     {
-        Serial.println("MMA8451 Couldnt start");
+        Serial.println("accl [Failed]");
         while (1)
             ;
     }
-    Serial.println("MMA8451 found!");
-
+    Serial.println("accl [Connected]");
     mma.setRange(MMA8451_RANGE_2_G);
-
-    Serial.print("Range = ");
-    Serial.print(2 << mma.getRange());
-    Serial.println("G");
 }
 
 void setup()
@@ -93,6 +113,7 @@ void setup()
     delay(10);
 
     setup_wifi();
+    setup_ntp();
     setup_aws_iot();
     setup_accl();
 
@@ -104,10 +125,12 @@ void loop()
     // 10hz delay
     delay(100);
 
-    // Read the 'raw' data in 14-bit counts
-    mma.read();
+    // NTP Update
+    timeClient.update();
 
+    // Read the 'raw' data in 14-bit counts
     // Get a new sensor event
+    mma.read();
     sensors_event_t event;
     mma.getEvent(&event);
 
@@ -117,16 +140,6 @@ void loop()
         pow(event.acceleration.y, 2) +
         pow(event.acceleration.z, 2));
 
-    // Construct payload item
-    snprintf(
-        payload,
-        75,
-        "%f,%f,%f,%f",
-        event.acceleration.x,
-        event.acceleration.y,
-        event.acceleration.z,
-        accl_mag);
-
     if (msgReceived == 1)
     {
         msgReceived = 0;
@@ -135,14 +148,30 @@ void loop()
     }
     if (accl_mag >= accl_mag_thresh)
     {
-        if (aws_iot.publish(aws_mqtt_thing_topic, payload) == 0)
+        // JSON buffer
+        StaticJsonBuffer<200> jsonBuffer;
+        JsonObject &root = jsonBuffer.createObject();
+
+        root["timestamp"] = timeClient.getEpochTime();
+        root["accl_x"] = event.acceleration.x;
+        root["accl_y"] = event.acceleration.y;
+        root["accl_z"] = event.acceleration.z;
+        root["accl_mag"] = accl_mag;
+
+        String json_output;
+        root.printTo(json_output);
+
+        // Construct payload item
+        json_output.toCharArray(payload, 110);
+
+        if (aws_iot.publish(aws_mqtt_thing_topic_pub, payload) == 0)
         {
-            Serial.print("Publish Message:");
+            Serial.print("aws-pub [Success]: ");
             Serial.println(payload);
         }
         else
         {
-            Serial.println("Publish failed");
+            Serial.println("aws-pub [Failed]");
         }
     }
 }
