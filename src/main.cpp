@@ -39,6 +39,7 @@ NTPClient timeClient(ntpUDP, "au.pool.ntp.org", 3600, 60000);
 // Misc Values
 int status = WL_IDLE_STATUS;
 int msgCount = 0, msgReceived = 0;
+bool realtime = false;
 char payload[512];
 char rcvdPayload[512];
 
@@ -145,13 +146,15 @@ void loop()
         msgReceived = 0;
         Serial.print("Received Message:");
         Serial.println(rcvdPayload);
+        realtime = !realtime;
     }
-    if (accl_mag >= accl_mag_thresh)
+    if (accl_mag >= accl_mag_thresh || realtime)
     {
         // JSON buffer
         StaticJsonBuffer<200> jsonBuffer;
         JsonObject &root = jsonBuffer.createObject();
 
+        root["thing_id"] = thing_id;
         root["timestamp"] = timeClient.getEpochTime();
         root["accl_x"] = event.acceleration.x;
         root["accl_y"] = event.acceleration.y;
@@ -162,7 +165,7 @@ void loop()
         root.printTo(json_output);
 
         // Construct payload item
-        json_output.toCharArray(payload, 110);
+        json_output.toCharArray(payload, 160);
 
         if (aws_iot.publish(aws_mqtt_thing_topic_pub, payload) == 0)
         {
@@ -172,7 +175,6 @@ void loop()
         else
         {
             Serial.println("aws-pub [Failed]");
-            setup_wifi();
         }
     }
 }
