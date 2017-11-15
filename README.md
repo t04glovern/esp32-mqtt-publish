@@ -43,6 +43,7 @@ lib_deps =
     Adafruit MMA8451 Library@1.0.3
     ArduinoJson@5.11.2
     NTPClient@3.1.0
+    arduinoFFT@1.2.3
 ```
 
 ### lib dependencies
@@ -52,3 +53,7 @@ lib_deps =
 Based on the AWS_IOT Project in [ExploreEmbedded/Hornbill-Examples](https://github.com/ExploreEmbedded/Hornbill-Examples/tree/master/arduino-esp32/AWS_IOT), the AWS_IOT directory should be dropped into/maintained in the `lib` directory of this project
 
 You will need to make changes to `lib/AWS/IOT/src/aws_iot_certficates.c` based on the certificates you get when setting up a `thing` on the AWS platform.
+
+#### Filters
+
+A Filtering library that we used to better scale and average our data over the time domain
