@@ -80,5 +80,5 @@ Based on the AWS_IOT Project in [ExploreEmbedded/Hornbill-Examples](https://gith
 
 #### Filters
 
-A Filtering library that we use to create a single pole low pass filter to minimise the effect of noise at higher frequencies than our region of interest (1Hz-8Hz).
+A Filtering library that is used to create a single pole low pass filter to minimise the effect of noise at higher frequencies than our region of interest (1Hz-8Hz).
 
