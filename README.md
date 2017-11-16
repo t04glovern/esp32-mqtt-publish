@@ -1,4 +1,4 @@
-# esp32-mqtt-publish [![Build Status](https://travis-ci.org/t04glovern/esp32-mqtt-publish.svg?branch=master)](https://travis-ci.org/t04glovern/esp32-mqtt-publish)
+# AWS IoT App - MQTT Publisher [![Build Status](https://travis-ci.org/t04glovern/esp32-mqtt-publish.svg?branch=master)](https://travis-ci.org/t04glovern/esp32-mqtt-publish)
 
 ## Setup
 
@@ -20,6 +20,33 @@ char *aws_mqtt_thing_topic_pub = "YourMQTTAWSIoTThing/YourMQTTTopic";
 char *aws_mqtt_thing_topic_sub = "YourMQTTAWSIoTThing/YourMQTTTopic";
 
 #endif
+```
+
+You will also need to edit the `lib/AWS/IOT/src/aws_iot_certficates.c` file based on the certificates you get when setting up a `thing` on the AWS platform.
+
+```cpp
+// Example below, change this and the other two entries to your certificates
+
+const char certificate_pem_crt[] = {"-----BEGIN CERTIFICATE-----\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\
+-----END CERTIFICATE-----\n"};
 ```
 
 ## MQTT Providers
@@ -50,8 +77,6 @@ lib_deps =
 #### AWS_IOT
 
 Based on the AWS_IOT Project in [ExploreEmbedded/Hornbill-Examples](https://github.com/ExploreEmbedded/Hornbill-Examples/tree/master/arduino-esp32/AWS_IOT), the AWS_IOT directory should be dropped into/maintained in the `lib` directory of this project
-
-You will need to make changes to `lib/AWS/IOT/src/aws_iot_certficates.c` based on the certificates you get when setting up a `thing` on the AWS platform.
 
 #### Filters
 
