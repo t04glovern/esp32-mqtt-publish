@@ -80,6 +80,5 @@ Based on the AWS_IOT Project in [ExploreEmbedded/Hornbill-Examples](https://gith
 
 #### Filters
 
-A Filtering library that we used to better scale and average our data over the time domain
+A Filtering library that we use to create a single pole low pass filter to minimise the effect of noise at higher frequencies than our region of interest (1Hz-8Hz).
 
-[Kosme](https://github.com/kosme/arduinoFFT) fork of [makefurts](https://code.google.com/p/makefurt/) FFT Library
