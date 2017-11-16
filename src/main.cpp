@@ -39,7 +39,7 @@ Adafruit_MMA8451 mma = Adafruit_MMA8451();
 arduinoFFT FFT = arduinoFFT();
 
 // Accelerometer threshold
-float energy_thresh = 50.0f;
+float energy_thresh = 15.0f;
 
 // AWS_IOT Lib
 AWS_IOT aws_iot;
@@ -66,16 +66,16 @@ bool realtime = false;
 char payload[512];
 char rcvdPayload[512];
 
-float totalEnergy(float array[])
+double totalEnergy(float array[])
 {
    int i;
-   integrate = 0;
+   double integrate = 0;
    for (i=2; i<Filter_Frequency*2; i+=2)
    {
        //taking basic numerical value for integration, multiplying bin frequency width by its height.
-	 integrate = sum + array[i] * 1;
+	 integrate +=  array[i] * 1;
    }
-   return(sum);
+   return(integrate);
 }
 
 float filteredMagnitude(float ax, float ay, float az)
@@ -212,7 +212,7 @@ void loop()
     }
     //since we've calculated the frequency, check the ranges we care about (1hz-8hz)
     //sum them and check if they're higher than our threshold.
-    if (totalEnergy(vReal), >= energy_thresh || realtime)
+    if (totalEnergy(vReal) >= energy_thresh || realtime)
     {
         // JSON buffer
         StaticJsonBuffer<220> jsonBuffer;
