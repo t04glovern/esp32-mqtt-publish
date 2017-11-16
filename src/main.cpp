@@ -66,11 +66,11 @@ bool realtime = false;
 char payload[512];
 char rcvdPayload[512];
 
-double totalEnergy(float array[])
+double totalEnergy(double array[])
 {
    int i;
    double integrate = 0;
-   for (i=2; i<Filter_Frequency*2; i+=2)
+   for (i=2; i<FILTER_FREQUENCY*2; i+=2)
    {
        //taking basic numerical value for integration, multiplying bin frequency width by its height.
 	 integrate +=  array[i] * 1;
