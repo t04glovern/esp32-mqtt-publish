@@ -20,7 +20,6 @@ char *aws_mqtt_thing_topic_pub = "YourMQTTAWSIoTThing/YourMQTTTopic";
 char *aws_mqtt_thing_topic_sub = "YourMQTTAWSIoTThing/YourMQTTTopic";
 
 #endif
-
 ```
 
 ## MQTT Providers
@@ -57,3 +56,5 @@ You will need to make changes to `lib/AWS/IOT/src/aws_iot_certficates.c` based o
 #### Filters
 
 A Filtering library that we used to better scale and average our data over the time domain
+
+[Kosme](https://github.com/kosme/arduinoFFT) fork of [makefurts](https://code.google.com/p/makefurt/) FFT Library
